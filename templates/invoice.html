@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Invoice – Dolly Photo Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+/* A4 = 210mm × 297mm → quarter = 105mm × 148.5mm (A6 size, vertical) */
+.invoice-box {
+    width: 105mm;
+    min-height: 148.5mm;
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+}
+
+/* TOP BAR */
+.top-bar {
+    height: 5px;
+    background: linear-gradient(90deg, #FF5C00, #FFD400);
+    flex-shrink: 0;
+}
+
+/* WATERMARK */
+.invoice-box::before {
+    content: "";
+    position: absolute;
+    top: 45%; left: 50%;
+    width: 120px; height: 120px;
+    background: url("{{ url_for('static', filename='logo.png') }}") no-repeat center;
+    background-size: contain;
+    opacity: 0.05;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.body {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+/* ── HEADER ── */
+.inv-header {
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 1.5px dashed #e5e5e5;
+    margin-bottom: 10px;
+}
+.inv-header img {
+    height: 48px;
+    width: auto;
+    max-width: 140px;
+    object-fit: contain;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 5px;
+}
+.studio-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    color: #111;
+}
+.studio-title span { color: #FF5C00; }
+.studio-sub {
+    font-size: 8.5px;
+    color: #bbb;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-top: 1px;
+}
+
+/* ── INV NUMBER + DATE ── */
+.inv-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f7f7f7;
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin-bottom: 10px;
+}
+.inv-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    color: #FF5C00;
+}
+.inv-date-wrap { text-align: right; }
+.inv-date-label { font-size: 7.5px; color: #bbb; text-transform: uppercase; letter-spacing: 0.5px; }
+.inv-date-val { font-family: 'DM Mono', monospace; font-size: 10px; color: #555; font-weight: 500; }
+
+/* ── SECTION LABEL ── */
+.sec-label {
+    font-size: 7.5px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #ccc;
+    margin-bottom: 5px;
+}
+
+/* ── CUSTOMER ── */
+.customer-section {
+    padding-bottom: 8px;
+    border-bottom: 1.5px dashed #e5e5e5;
+    margin-bottom: 8px;
+}
+.cust-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    color: #111;
+    margin-bottom: 3px;
+}
+.cust-row { font-size: 9.5px; color: #888; margin-bottom: 1px; }
+
+/* ── ORDER ── */
+.order-section {
+    padding-bottom: 8px;
+    border-bottom: 1.5px dashed #e5e5e5;
+    margin-bottom: 8px;
+}
+.service-chip {
+    display: inline-block;
+    background: rgba(255,92,0,0.1);
+    color: #FF5C00;
+    border: 1px solid rgba(255,92,0,0.22);
+    font-size: 9.5px; font-weight: 700;
+    padding: 3px 9px; border-radius: 4px;
+    margin-bottom: 5px;
+}
+.order-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9.5px;
+    margin-bottom: 2px;
+}
+.order-row .olabel { color: #aaa; }
+.order-row .oval   { color: #555; font-weight: 500; }
+
+/* ── PAYMENT ── */
+.payment-section {
+    padding-bottom: 8px;
+    border-bottom: 1.5px dashed #e5e5e5;
+    margin-bottom: 8px;
+}
+.total-box {
+    background: #111;
+    border-radius: 6px;
+    padding: 7px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+.total-box .tl { font-size: 9px; color: #888; }
+.total-box .tv {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+}
+.pay-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid #f5f5f5;
+    font-size: 10px;
+}
+.pay-row:last-of-type { border-bottom: none; }
+.pay-row .pl { color: #aaa; }
+.pay-row .pv { font-family: 'DM Mono', monospace; font-weight: 500; }
+
+.status-badge {
+    display: block;
+    text-align: center;
+    font-size: 9px; font-weight: 700;
+    padding: 4px 0;
+    border-radius: 5px;
+    letter-spacing: 0.6px;
+    margin-top: 6px;
+}
+.status-paid { background: #edfaf3; color: #1a9e5c; border: 1px solid #a3e4c1; }
+.status-due  { background: #fff4f4; color: #e03131; border: 1px solid #ffc0c0; }
+
+/* ── SIGNATURES ── */
+.sign-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.sign-col { text-align: center; }
+.sign-line-el {
+    width: 60px;
+    border-bottom: 1px solid #ccc;
+    margin: 0 auto 3px;
+}
+.sign-txt { font-size: 8px; color: #bbb; }
+
+/* ── FOOTER ── */
+.inv-footer {
+    background: #fafafa;
+    border-top: 1.5px dashed #e5e5e5;
+    padding: 8px 0 2px;
+    text-align: center;
+}
+.footer-phone {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: #FF5C00;
+    margin-bottom: 3px;
+}
+.footer-addr {
+    font-size: 8.5px;
+    color: #999;
+    line-height: 1.6;
+    margin-bottom: 4px;
+}
+.footer-addr b { color: #666; }
+.footer-thanks {
+    font-size: 7.5px;
+    color: #ccc;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+/* ── PRINT BTN ── */
+.print-btn {
+    margin-top: 18px;
+    width: 105mm;
+    padding: 12px;
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.print-btn:hover { background: #FF5C00; }
+
+@media print {
+    body { background: white; padding: 0; }
+    .print-btn { display: none; }
+    .invoice-box { box-shadow: none; }
+    @page { size: A6 portrait; margin: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="invoice-box">
+    <div class="top-bar"></div>
+    <div class="body">
+
+        <!-- HEADER -->
+        <div class="inv-header">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="logo">
+            <div class="studio-title"><span>Dolly</span> Photo Studio</div>
+            <div class="studio-sub">Professional Photography & Printing</div>
+        </div>
+        
+        <!-- INV META -->
+        <div class="inv-meta">
+            <div class="inv-num">{{ invoice_number }}</div>
+            <div class="inv-date-wrap">
+                <div class="inv-date-label">Date</div>
+                <div class="inv-date-val">{{ today_date }}</div>
+            </div>
+        </div>
+
+        <!-- CUSTOMER -->
+        <div class="customer-section">
+            <div class="sec-label">Customer</div>
+            <div class="cust-name">{{ customer[1] }}</div>
+            <div class="cust-row">📞 {{ customer[2] }}</div>
+            {% if customer[3] %}
+            <div class="cust-row">📍 {{ customer[3] }}</div>
+            {% endif %}
+        </div>
+
+        <!-- ORDER -->
+        <div class="order-section">
+            <div class="sec-label">Order #{{ order[0] }}</div>
+            <span class="service-chip">{{ order[2] }}</span>
+            <div class="order-row"><span class="olabel">Delivery Date</span><span class="oval">{{ order[4] }}</span></div>
+            <div class="order-row"><span class="olabel">Status</span><span class="oval">{{ order[5] }}</span></div>
+            <div class="order-row"><span class="olabel">Payment Mode</span><span class="oval">{{ payment[5] }}</span></div>
+        </div>
+
+        <!-- PAYMENT -->
+        <div class="payment-section">
+            <div class="sec-label">Payment</div>
+            <div class="total-box">
+                <span class="tl">Total Amount</span>
+                <span class="tv">₹{{ payment[2] }}</span>
+            </div>
+            <div class="pay-row">
+                <span class="pl">Advance Paid</span>
+                <span class="pv" style="color:#1a9e5c;">₹{{ payment[3] }}</span>
+            </div>
+            <div class="pay-row">
+                <span class="pl">Balance Due</span>
+                <span class="pv" style="color:{% if payment[4] == 0 %}#1a9e5c{% else %}#e03131{% endif %};">₹{{ payment[4] }}</span>
+            </div>
+            {% if payment[4] == 0 %}
+            <span class="status-badge status-paid">✓ FULLY PAID</span>
+            {% else %}
+            <span class="status-badge status-due">⏳ BALANCE DUE</span>
+            {% endif %}
+        </div>
+
+        <!-- SIGNATURES -->
+        <div class="sign-row">
+            <div class="sign-col">
+                <div class="sign-line-el"></div>
+                <div class="sign-txt">Customer Signature</div>
+            </div>
+            <div class="sign-col">
+                <div class="sign-line-el"></div>
+                <div class="sign-txt">Authorized Signature</div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="inv-footer">
+            <div class="footer-phone">📞 +91 98765 43210</div>
+            <div class="footer-addr">
+                <b>Shop No. 12, Main Market, Gandhi Nagar</b><br>
+                Ghaziabad, Uttar Pradesh – 201001<br>
+                ✉️ dollyphotostudio@gmail.com
+            </div>
+            <div class="footer-thanks">— Thank you for your visit —</div>
+        </div>
+
+    </div>
+</div>
+
+<button class="print-btn" onclick="window.print()">🖨️ Print Invoice</button>
+<script>
+function toggleMode() {
+    document.body.classList.toggle("dark-mode");
+    localStorage.setItem("theme",
+        document.body.classList.contains("dark-mode") ? "dark" : "light"
+    );
+}
+
+window.onload = function () {
+    if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark-mode");
+    }
+};
+</script>
+</body>
+</html>
