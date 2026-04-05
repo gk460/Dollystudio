@@ -50,8 +50,10 @@ app.secret_key = "mysecretkey123"
 import os
 
 # user writable folder (VERY IMPORTANT)
-db_path = os.path.join(os.environ['APPDATA'], "DollyStudio")
+import os
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(BASE_DIR, "database.db")
 if not os.path.exists(db_path):
     os.makedirs(db_path)
 
