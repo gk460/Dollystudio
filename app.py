@@ -8,9 +8,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from datetime import datetime
 
 app = Flask(__name__)
-
-app.secret_key = "mysecretkey123"  # 👈 YE ADD KARO
-
+app.secret_key = "supersecretkey123"
 
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
@@ -62,16 +60,21 @@ DATABASE = os.path.join(db_path, "studio.db")
 def get_db():
     conn = sqlite3.connect(DATABASE)
     return conn
-
+init_db()
 def init_db():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect("database.db")
     c = conn.cursor()
 
-    c.execute("""CREATE TABLE IF NOT EXISTS users (
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT,
         password TEXT
-    )""")
+    )
+    """)
+
+    conn.commit()
+    conn.close()
 
     c.execute("INSERT OR IGNORE INTO users (id, username, password) VALUES (1,'admin','admin123')")
 
